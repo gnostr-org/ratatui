@@ -26,6 +26,9 @@ pub struct Frame<'a> {
 
     /// The frame count indicating the sequence number of this frame.
     pub(crate) count: usize,
+
+    /// Whether frame should be rendered
+    pub(crate) dirty: bool,
 }
 
 /// `CompletedFrame` represents the state of the terminal after all changes performed in the last
@@ -85,6 +88,7 @@ impl Frame<'_> {
     /// [`Layout`]: crate::layout::Layout
     pub fn render_widget<W: Widget>(&mut self, widget: W, area: Rect) {
         widget.render(area, self.buffer);
+        self.dirty = true;
     }
 
     /// Render a [`WidgetRef`] to the current buffer using [`WidgetRef::render_ref`].
@@ -109,6 +113,7 @@ impl Frame<'_> {
     #[instability::unstable(feature = "widget-ref")]
     pub fn render_widget_ref<W: WidgetRef>(&mut self, widget: W, area: Rect) {
         widget.render_ref(area, self.buffer);
+        self.dirty = true;
     }
 
     /// Render a [`StatefulWidget`] to the current buffer using [`StatefulWidget::render`].
@@ -138,6 +143,7 @@ impl Frame<'_> {
         W: StatefulWidget,
     {
         widget.render(area, self.buffer, state);
+        self.dirty = true;
     }
 
     /// Render a [`StatefulWidgetRef`] to the current buffer using
@@ -170,6 +176,7 @@ impl Frame<'_> {
         W: StatefulWidgetRef,
     {
         widget.render_ref(area, self.buffer, state);
+        self.dirty = true;
     }
 
     /// After drawing this frame, make the cursor visible and put it at the specified (x, y)
@@ -195,6 +202,7 @@ impl Frame<'_> {
 
     /// Gets the buffer that this `Frame` draws into as a mutable reference.
     pub fn buffer_mut(&mut self) -> &mut Buffer {
+        self.dirty = true;
         self.buffer
     }
 

@@ -169,6 +169,7 @@ where
             viewport_area: self.viewport_area,
             buffer: self.current_buffer_mut(),
             count,
+            dirty: false,
         }
     }
 
@@ -383,39 +384,49 @@ where
 
         let mut frame = self.get_frame();
 
-        render_callback(&mut frame).map_err(Into::into)?;
+        if frame.dirty {
+            render_callback(&mut frame).map_err(Into::into)?;
 
-        // We can't change the cursor position right away because we have to flush the frame to
-        // stdout first. But we also can't keep the frame around, since it holds a &mut to
-        // Buffer. Thus, we're taking the important data out of the Frame and dropping it.
-        let cursor_position = frame.cursor_position;
+            // We can't change the cursor position right away because we have to flush the frame to
+            // stdout first. But we also can't keep the frame around, since it holds a &mut to
+            // Buffer. Thus, we're taking the important data out of the Frame and dropping it.
+            let cursor_position = frame.cursor_position;
 
-        // Draw to stdout
-        self.flush()?;
+            // Draw to stdout
+            self.flush()?;
 
-        match cursor_position {
-            None => self.hide_cursor()?,
-            Some(position) => {
-                self.show_cursor()?;
-                self.set_cursor_position(position)?;
+            match cursor_position {
+                None => self.hide_cursor()?,
+                Some(position) => {
+                    self.show_cursor()?;
+                    self.set_cursor_position(position)?;
+                }
             }
+
+            self.swap_buffers();
+
+            // Flush
+            self.backend.flush()?;
+
+            let completed_frame = CompletedFrame {
+                buffer: &self.buffers[1 - self.current],
+                area: self.last_known_area,
+                count: self.frame_count,
+            };
+
+            // increment frame count before returning from draw
+            self.frame_count = self.frame_count.wrapping_add(1);
+
+            Ok(completed_frame)
+        } else {
+            let completed_frame = CompletedFrame {
+                buffer: &self.buffers[self.current],
+                area: self.last_known_area,
+                count: self.frame_count,
+            };
+
+            Ok(completed_frame)
         }
-
-        self.swap_buffers();
-
-        // Flush
-        self.backend.flush()?;
-
-        let completed_frame = CompletedFrame {
-            buffer: &self.buffers[1 - self.current],
-            area: self.last_known_area,
-            count: self.frame_count,
-        };
-
-        // increment frame count before returning from draw
-        self.frame_count = self.frame_count.wrapping_add(1);
-
-        Ok(completed_frame)
     }
 
     /// Hides the cursor.
