@@ -134,9 +134,11 @@ impl App {
         //           //text      //background color of widget
         //                       //Color::Reset bkgrnd of terminal
         let style = (Color::Red, Color::Reset);
+        //let style = (self.selected_tab.palette().c500, Color::Reset);
                               //text       //background of selected tab
         //                                 //Color::Reset bkgrnd of terminal
         let highlight_style = (Color::Red, Color::Reset);
+        //let highlight_style = (self.selected_tab.palette().c500, Color::Reset);
         let selected_tab_index = self.selected_tab as usize;
         Tabs::new(titles)
             .style(style)
@@ -175,6 +177,7 @@ impl SelectedTab {
     fn title(self) -> Line<'static> {
         format!("  {self}  ")
             //text color of not selected tab
+            //.fg(self.palette().c50)
             .fg(Color::White)
             //color of bckgrnd of not selected tab
             .bg(Color::Reset)
@@ -212,6 +215,22 @@ impl SelectedTab {
             .padding(Padding::horizontal(1))
             .border_style(self.palette().c900)
     }
+    /// <https://docs.rs/ratatui/latest/ratatui/style/palette/tailwind/index.html>
+    /// <https://docs.rs/ratatui/latest/src/ratatui/style/palette/tailwind.rs.html#594-606>
+    /// Magnolia
+    /// pub const PURPLE: Palette = Palette {
+    ///     c50: Color::from_u32(0xfaf5ff),  //https://www.htmlcsscolor.com/hex/FAF5FF
+    ///     c100: Color::from_u32(0xf3e8ff),
+    ///     c200: Color::from_u32(0xe9d5ff),
+    ///     c300: Color::from_u32(0xd8b4fe),
+    ///     c400: Color::from_u32(0xc084fc),
+    ///     c500: Color::from_u32(0xa855f7),
+    ///     c600: Color::from_u32(0x9333ea),
+    ///     c700: Color::from_u32(0x7e22ce),
+    ///     c800: Color::from_u32(0x6b21a8),
+    ///     c900: Color::from_u32(0x581c87),
+    ///     c950: Color::from_u32(0x3b0764),
+    /// };
     const fn palette(self) -> tailwind::Palette {
         match self {
             Self::Tab1 => tailwind::PURPLE,
