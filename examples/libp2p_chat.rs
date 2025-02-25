@@ -150,7 +150,6 @@ impl App {
         self.selected_tab = self.selected_tab.previous();
     }
 
-
     fn move_cursor_left(&mut self) {
         let cursor_moved_left = self.character_index.saturating_sub(1);
         self.character_index = self.clamp_cursor(cursor_moved_left);
@@ -215,27 +214,8 @@ impl App {
         self.reset_cursor();
     }
 
-
-
-
     pub fn quit(&mut self) {
         self.state = AppState::Quitting;
-    }
-}
-
-impl SelectedTab {
-    /// Get the previous tab, if there is no previous tab return the current tab.
-    fn previous(self) -> Self {
-        let current_index: usize = self as usize;
-        let previous_index = current_index.saturating_sub(1);
-        Self::from_repr(previous_index).unwrap_or(self)
-    }
-
-    /// Get the next tab, if there is no next tab return the current tab.
-    fn next(self) -> Self {
-        let current_index = self as usize;
-        let next_index = current_index.saturating_add(1);
-        Self::from_repr(next_index).unwrap_or(self)
     }
 }
 
@@ -286,6 +266,24 @@ fn render_footer(area: Rect, buf: &mut Buffer) {
         .centered()
         .render(area, buf);
 }
+
+
+impl SelectedTab {
+    /// Get the previous tab, if there is no previous tab return the current tab.
+    fn previous(self) -> Self {
+        let current_index: usize = self as usize;
+        let previous_index = current_index.saturating_sub(1);
+        Self::from_repr(previous_index).unwrap_or(self)
+    }
+
+    /// Get the next tab, if there is no next tab return the current tab.
+    fn next(self) -> Self {
+        let current_index = self as usize;
+        let next_index = current_index.saturating_add(1);
+        Self::from_repr(next_index).unwrap_or(self)
+    }
+}
+
 
 impl Widget for SelectedTab {
     fn render(self, area: Rect, buf: &mut Buffer) {
