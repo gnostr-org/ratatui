@@ -155,31 +155,32 @@ impl App {
 
         //setup frame
         let vertical = Layout::vertical([
-            Constraint::Fill(80),
-            Constraint::Min(3),
-            Constraint::Max(1),
+            Constraint::Min(3),   //tabs_area
+            Constraint::Fill(80), //messages_area
+            Constraint::Min(3),   //input_area
+            Constraint::Max(1),   //help_area
         ]);
-        let [messages_area, input_area, help_area] = vertical.areas(frame.area());
+        let [tabs_area, messages_area, input_area, help_area] = vertical.areas(frame.area());
 
         //detect input_mode
         let (msg, style) = match self.input_mode {
             InputMode::Normal => (
                 vec![
-                    "Press ".into(),
-                    "q or Esc".bold(),
-                    " to exit, ".into(),
+                    " ".into(),
+                    "Esc".bold(),
+                    " <QUIT> ".into(),
                     "e".bold(),
-                    " to start editing.".bold(),
+                    " <EDIT>".bold(),
                 ],
                 Style::default().add_modifier(Modifier::RAPID_BLINK),
             ),
             InputMode::Editing => (
                 vec![
-                    "Press ".into(),
+                    " ".into(),
                     "Esc".bold(),
-                    " to stop editing, ".into(),
-                    "Enter".bold(),
-                    " to record the message".into(),
+                    " <NORMAL> ".into(),
+                    "<Enter>".bold(),
+                    " <POST>".into(),
                 ],
                 Style::default(),
             ),
