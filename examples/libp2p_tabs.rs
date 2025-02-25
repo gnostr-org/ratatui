@@ -165,8 +165,8 @@ impl App {
         ]);
         let [messages_area, input_area, help_area] = vertical.areas(frame.area());
         let horizontal = Layout::vertical([
-            Constraint::Min(3),   //tabs_area
-            Constraint::Min(3),   //input_area
+            Constraint::Fill(3),   //title_area
+            Constraint::Fill(3),   //tabs_area
         ]);
         let [title_area, tabs_area] = horizontal.areas(frame.area());
 
@@ -196,7 +196,7 @@ impl App {
 
         //title_area stub
         //create a Text element
-        let text = Text::from(Line::from("Title Area")).patch_style(style.clone());
+        let text = Text::from(Line::from("           Title Area")).patch_style(style.clone());
 
         //create Paragraph with Text element content
         let help_message = Paragraph::new(text);
@@ -206,7 +206,7 @@ impl App {
 
         //tabs_area stub
         //create a Text element
-        let text = Text::from(Line::from("Tabs Area")).patch_style(style.clone());
+        let text = Text::from(Line::from("           Tabs Area")).patch_style(style.clone());
 
         //create Paragraph with Text element content
         let help_message = Paragraph::new(text);
