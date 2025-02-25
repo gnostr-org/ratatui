@@ -152,6 +152,8 @@ impl App {
     }
 
     fn draw(&self, frame: &mut Frame) {
+
+        //setup frame
         let vertical = Layout::vertical([
             Constraint::Min(1),
             Constraint::Length(3),
@@ -159,6 +161,7 @@ impl App {
         ]);
         let [messages_area, input_area, help_area] = vertical.areas(frame.area());
 
+        //detect input_mode
         let (msg, style) = match self.input_mode {
             InputMode::Normal => (
                 vec![
@@ -181,17 +184,29 @@ impl App {
                 Style::default(),
             ),
         };
+
+        //create a Text element
         let text = Text::from(Line::from(msg)).patch_style(style);
+
+        //create Paragraph with Text element content
         let help_message = Paragraph::new(text);
+
+        //render to frame
         frame.render_widget(help_message, help_area);
 
+        //
         let input = Paragraph::new(self.input.as_str())
             .style(match self.input_mode {
                 InputMode::Normal => Style::default(),
                 InputMode::Editing => Style::default().fg(Color::Yellow),
             })
             .block(Block::bordered().title("Input"));
+
+        //render to frame
         frame.render_widget(input, input_area);
+
+
+        //
         match self.input_mode {
             // Hide the cursor. `Frame` does this by default, so we don't need to do anything here
             InputMode::Normal => {}
@@ -208,6 +223,7 @@ impl App {
             )),
         }
 
+        //
         let messages: Vec<ListItem> = self
             .messages
             .iter()
@@ -218,6 +234,8 @@ impl App {
             })
             .collect();
         let messages = List::new(messages).block(Block::bordered().title("Messages"));
+
+        //render to frame
         frame.render_widget(messages, messages_area);
     }
 
