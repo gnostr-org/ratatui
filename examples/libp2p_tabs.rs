@@ -240,10 +240,13 @@ impl App {
                     KeyCode::Char('e') => {
                         self.input_mode = InputMode::Editing;
                     }
-                    KeyCode::Char('q') => {
-                        return Ok(());
-                    }
+                    //KeyCode::Char('q') => {
+                    //    return Ok(());
+                    //}
 
+                    KeyCode::Char('l') | KeyCode::Right => self.next_tab(),
+                    KeyCode::Char('h') | KeyCode::Left => self.previous_tab(),
+                    KeyCode::Char('q') | KeyCode::Esc => self.quit(),
 
 
                     _ => {}
@@ -258,14 +261,6 @@ impl App {
                     _ => {}
                 },
                 InputMode::Editing => {}
-            }
-            if key.kind == KeyEventKind::Press {
-                match key.code {
-                    KeyCode::Char('l') | KeyCode::Right => self.next_tab(),
-                    KeyCode::Char('h') | KeyCode::Left => self.previous_tab(),
-                    KeyCode::Char('q') | KeyCode::Esc => self.quit(),
-                    _ => {}
-                }
             }
         }
         Ok(())
