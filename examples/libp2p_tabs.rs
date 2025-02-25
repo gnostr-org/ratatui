@@ -87,6 +87,10 @@ impl App {
         }
     }
 
+
+
+
+
     fn move_cursor_left(&mut self) {
         let cursor_moved_left = self.character_index.saturating_sub(1);
         self.character_index = self.clamp_cursor(cursor_moved_left);
@@ -186,6 +190,18 @@ impl App {
             ),
         };
 
+        //tabs_area stub
+        //create a Text element
+        let text = Text::from(Line::from("Tabs Area")).patch_style(style.clone());
+
+        //create Paragraph with Text element content
+        let help_message = Paragraph::new(text);
+
+        //render to frame
+        frame.render_widget(help_message, tabs_area);
+
+
+
         //create a Text element
         let text = Text::from(Line::from(msg)).patch_style(style);
 
@@ -245,7 +261,8 @@ impl App {
     fn run(mut self, mut terminal: DefaultTerminal) -> Result<()> {
         while self.state == AppState::Running {
             //terminal.draw(|frame| frame.render_widget(&self, frame.area())
-            terminal.draw(|frame| self.draw(frame))?;
+            terminal.draw(|frame|
+                self.draw(frame))?;
             self.handle_events()?;
         }
         Ok(())
