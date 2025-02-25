@@ -132,9 +132,9 @@ impl App {
     fn render_tabs(&self, area: Rect, buf: &mut Buffer) {
         let titles = SelectedTab::iter().map(SelectedTab::title);
         //let style = (Color::Reset, Color::White);
-        let style = (self.selected_tab.palette().c500, self.selected_tab.palette().c100);
+        let style = (self.selected_tab.palette().c100, self.selected_tab.palette().c200);
                               //text                             //background
-        let highlight_style = (self.selected_tab.palette().c100, Color::Reset);
+        let highlight_style = (self.selected_tab.palette().c400, Color::Reset);
         let selected_tab_index = self.selected_tab as usize;
         Tabs::new(titles)
             .style(style)
@@ -210,10 +210,10 @@ impl SelectedTab {
     }
     const fn palette(self) -> tailwind::Palette {
         match self {
-            Self::Tab1 => tailwind::VIOLET,
-            Self::Tab2 => tailwind::VIOLET,
-            Self::Tab3 => tailwind::VIOLET,
-            Self::Tab4 => tailwind::VIOLET,
+            Self::Tab1 => tailwind::PURPLE,
+            Self::Tab2 => tailwind::PURPLE,
+            Self::Tab3 => tailwind::PURPLE,
+            Self::Tab4 => tailwind::PURPLE,
         }
     }
 }
