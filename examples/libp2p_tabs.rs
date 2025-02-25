@@ -166,7 +166,7 @@ impl App {
             InputMode::Normal => (
                 vec![
                     "Press ".into(),
-                    "q".bold(),
+                    "q or Esc".bold(),
                     " to exit, ".into(),
                     "e".bold(),
                     " to start editing.".bold(),
