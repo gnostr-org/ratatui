@@ -133,11 +133,11 @@ impl App {
         let titles = SelectedTab::iter().map(SelectedTab::title);
         //           //text      //background color of widget
         //                       //Color::Reset bkgrnd of terminal
-        let style = (Color::Red, Color::Reset);
+        let style = (Color::Magenta, Color::Reset);
         //let style = (self.selected_tab.palette().c500, Color::Reset);
                               //text       //background of selected tab
         //                                 //Color::Reset bkgrnd of terminal
-        let highlight_style = (Color::Red, Color::Reset);
+        let highlight_style = (Color::White, Color::Reset);
         //let highlight_style = (self.selected_tab.palette().c500, Color::Reset);
         let selected_tab_index = self.selected_tab as usize;
         Tabs::new(titles)
@@ -151,7 +151,7 @@ impl App {
 }
 
 fn render_title(area: Rect, buf: &mut Buffer) {
-    "Ratatui Tabs Example".bold().render(area, buf);
+    "Ratatui Tabs Example".magenta().bold().render(area, buf);
 }
 
 fn render_footer(area: Rect, buf: &mut Buffer) {
@@ -178,7 +178,7 @@ impl SelectedTab {
         format!("  {self}  ")
             //text color of not selected tab
             //.fg(self.palette().c50)
-            .fg(Color::White)
+            .fg(Color::Magenta)
             //color of bckgrnd of not selected tab
             .bg(Color::Reset)
             .into()
