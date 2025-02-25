@@ -159,12 +159,16 @@ impl App {
 
         //setup frame
         let vertical = Layout::vertical([
-            Constraint::Min(3),   //tabs_area
             Constraint::Fill(80), //messages_area
             Constraint::Min(3),   //input_area
             Constraint::Max(1),   //help_area
         ]);
-        let [tabs_area, messages_area, input_area, help_area] = vertical.areas(frame.area());
+        let [messages_area, input_area, help_area] = vertical.areas(frame.area());
+        let horizontal = Layout::vertical([
+            Constraint::Min(3),   //tabs_area
+            Constraint::Min(3),   //input_area
+        ]);
+        let [title_area, tabs_area] = horizontal.areas(frame.area());
 
         //detect input_mode
         let (msg, style) = match self.input_mode {
@@ -189,6 +193,16 @@ impl App {
                 Style::default(),
             ),
         };
+
+        //title_area stub
+        //create a Text element
+        let text = Text::from(Line::from("Title Area")).patch_style(style.clone());
+
+        //create Paragraph with Text element content
+        let help_message = Paragraph::new(text);
+
+        //render to frame
+        frame.render_widget(help_message, title_area);
 
         //tabs_area stub
         //create a Text element
