@@ -155,9 +155,9 @@ impl App {
 
         //setup frame
         let vertical = Layout::vertical([
-            Constraint::Percentage(100),
+            Constraint::Fill(80),
             Constraint::Min(3),
-            Constraint::Min(0),
+            Constraint::Max(1),
         ]);
         let [messages_area, input_area, help_area] = vertical.areas(frame.area());
 
