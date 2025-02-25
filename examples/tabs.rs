@@ -18,7 +18,7 @@ use ratatui::{
     buffer::Buffer,
     crossterm::event::{self, Event, KeyCode, KeyEventKind},
     layout::{Constraint, Layout, Rect},
-    style::{palette::tailwind, Color, Stylize},
+    style::{palette::tailwind, Style, Color, Stylize},
     symbols,
     text::Line,
     widgets::{Block, Padding, Paragraph, Tabs, Widget},
@@ -131,9 +131,13 @@ impl Widget for &App {
 impl App {
     fn render_tabs(&self, area: Rect, buf: &mut Buffer) {
         let titles = SelectedTab::iter().map(SelectedTab::title);
-        let highlight_style = (Color::default(), self.selected_tab.palette().c700);
+        //let style = (Color::Reset, Color::White);
+        let style = (self.selected_tab.palette().c500, self.selected_tab.palette().c100);
+                              //text                             //background
+        let highlight_style = (self.selected_tab.palette().c100, Color::Reset);
         let selected_tab_index = self.selected_tab as usize;
         Tabs::new(titles)
+            .style(style)
             .highlight_style(highlight_style)
             .select(selected_tab_index)
             .padding("", "")
@@ -168,31 +172,31 @@ impl SelectedTab {
     /// Return tab's name as a styled `Line`
     fn title(self) -> Line<'static> {
         format!("  {self}  ")
-            .fg(tailwind::SLATE.c200)
-            .bg(self.palette().c900)
+            .fg(tailwind::VIOLET.c200)
+            .bg(tailwind::VIOLET.c200)
             .into()
     }
 
     fn render_tab0(self, area: Rect, buf: &mut Buffer) {
-        Paragraph::new("Hello, World!")
+        Paragraph::new("render_tab0:Hello, World!")
             .block(self.block())
             .render(area, buf);
     }
 
     fn render_tab1(self, area: Rect, buf: &mut Buffer) {
-        Paragraph::new("Welcome to the Ratatui tabs example!")
+        Paragraph::new("render_tab1:Welcome to the Ratatui tabs example!")
             .block(self.block())
             .render(area, buf);
     }
 
     fn render_tab2(self, area: Rect, buf: &mut Buffer) {
-        Paragraph::new("Look! I'm different than others!")
+        Paragraph::new("render_tab2:Look! I'm different than others!")
             .block(self.block())
             .render(area, buf);
     }
 
     fn render_tab3(self, area: Rect, buf: &mut Buffer) {
-        Paragraph::new("I know, these are some basic changes. But I think you got the main idea.")
+        Paragraph::new("render_tab3:I know, these are some basic changes. But I think you got the main idea.")
             .block(self.block())
             .render(area, buf);
     }
@@ -204,13 +208,12 @@ impl SelectedTab {
             .padding(Padding::horizontal(1))
             .border_style(self.palette().c700)
     }
-
     const fn palette(self) -> tailwind::Palette {
         match self {
-            Self::Tab1 => tailwind::BLUE,
-            Self::Tab2 => tailwind::EMERALD,
-            Self::Tab3 => tailwind::INDIGO,
-            Self::Tab4 => tailwind::RED,
+            Self::Tab1 => tailwind::VIOLET,
+            Self::Tab2 => tailwind::VIOLET,
+            Self::Tab3 => tailwind::VIOLET,
+            Self::Tab4 => tailwind::VIOLET,
         }
     }
 }
