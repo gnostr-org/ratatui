@@ -87,10 +87,6 @@ impl App {
         }
     }
 
-
-
-
-
     fn move_cursor_left(&mut self) {
         let cursor_moved_left = self.character_index.saturating_sub(1);
         self.character_index = self.clamp_cursor(cursor_moved_left);
@@ -156,7 +152,6 @@ impl App {
     }
 
     fn draw(&self, frame: &mut Frame) {
-
         //setup frame
         let vertical = Layout::vertical([
             Constraint::Fill(80), //messages_area
@@ -165,8 +160,8 @@ impl App {
         ]);
         let [messages_area, input_area, help_area] = vertical.areas(frame.area());
         let horizontal = Layout::vertical([
-            Constraint::Fill(3),   //title_area
-            Constraint::Fill(3),   //tabs_area
+            Constraint::Fill(3), //title_area
+            Constraint::Fill(3), //tabs_area
         ]);
         let [title_area, tabs_area] = horizontal.areas(frame.area());
 
@@ -214,8 +209,6 @@ impl App {
         //render to frame
         frame.render_widget(help_message, tabs_area);
 
-
-
         //create a Text element
         let text = Text::from(Line::from(msg)).patch_style(style);
 
@@ -235,7 +228,6 @@ impl App {
 
         //render to frame
         frame.render_widget(input, input_area);
-
 
         //
         match self.input_mode {
@@ -270,13 +262,10 @@ impl App {
         frame.render_widget(messages, messages_area);
     }
 
-
-
     fn run(mut self, mut terminal: DefaultTerminal) -> Result<()> {
         while self.state == AppState::Running {
             //terminal.draw(|frame| frame.render_widget(&self, frame.area())
-            terminal.draw(|frame|
-                self.draw(frame))?;
+            terminal.draw(|frame| self.draw(frame))?;
             self.handle_events()?;
         }
         Ok(())
@@ -284,7 +273,6 @@ impl App {
 
     fn handle_events(&mut self) -> std::io::Result<()> {
         if let Event::Key(key) = event::read()? {
-
             match self.input_mode {
                 InputMode::Normal => match key.code {
                     KeyCode::Char('e') => {
@@ -293,11 +281,9 @@ impl App {
                     //KeyCode::Char('q') => {
                     //    return Ok(());
                     //}
-
                     KeyCode::Char('l') | KeyCode::Right => self.next_tab(),
                     KeyCode::Char('h') | KeyCode::Left => self.previous_tab(),
                     KeyCode::Char('q') | KeyCode::Esc => self.quit(),
-
 
                     _ => {}
                 },
@@ -419,14 +405,9 @@ impl SelectedTab {
 
     fn render_tab0(self, area: Rect, buf: &mut Buffer) {
 
-
-
         //Paragraph::new("render_tab0:Hello, World!")
         //    .block(self.block())
         //    .render(area, buf);
-
-
-
     }
 
     fn render_tab1(self, area: Rect, buf: &mut Buffer) {

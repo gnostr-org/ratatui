@@ -14,12 +14,14 @@
 //! [examples readme]: https://github.com/ratatui/ratatui/blob/main/examples/README.md
 
 use color_eyre::Result;
-use ratatui::text::Text;
+use ratatui::style::Modifier;
 use ratatui::text::Span;
+use ratatui::text::Text;
+use ratatui::Frame;
+//use ratatui::widgets::block::Position;
+use ratatui::prelude::Position;
 use ratatui::widgets::List;
 use ratatui::widgets::ListItem;
-use ratatui::widgets::block::Position;
-use ratatui::style::Modifier;
 use ratatui::{
     buffer::Buffer,
     crossterm::event::{self, Event, KeyCode, KeyEventKind},
@@ -88,25 +90,22 @@ impl App {
             messages: Vec::new(),
             character_index: 0,
             state: AppState::Running,
-            selected_tab: SelectedTab::Tab1
+            selected_tab: SelectedTab::Tab1,
         }
     }
 
     fn run(mut self, mut terminal: DefaultTerminal) -> Result<()> {
         while self.state == AppState::Running {
-        loop {
-
-            //terminal.draw(|frame| self.draw(frame))?;
-            terminal.draw(|frame| frame.render_widget(&self, frame.area()))?;
-            self.handle_events()?;
-
-        }//loop end
-        }//while end
+            loop {
+                //terminal.draw(|frame| self.draw(frame))?;
+                terminal.draw(|frame| frame.render_widget(&self, frame.area()))?;
+                self.handle_events()?;
+            } //loop end
+        } //while end
         Ok(())
-    }//run end
+    } //run end
 
     fn handle_events(&mut self) -> std::io::Result<()> {
-
         if let Event::Key(key) = event::read()? {
             match self.input_mode {
                 InputMode::Normal => match key.code {
@@ -134,6 +133,76 @@ impl App {
             }
         }
         Ok(())
+    }
+
+    fn draw(&self, frame: &mut Frame) {
+        let vertical = Layout::vertical([
+            Constraint::Length(1),
+            Constraint::Length(3),
+            Constraint::Min(1),
+        ]);
+        let [help_area, input_area, messages_area] = vertical.areas(frame.area());
+
+        let (msg, style) = match self.input_mode {
+            InputMode::Normal => (
+                vec![
+                    "Press ".into(),
+                    "q".bold(),
+                    " to exit, ".into(),
+                    "e".bold(),
+                    " to start editing.".bold(),
+                ],
+                Style::default().add_modifier(Modifier::RAPID_BLINK),
+            ),
+            InputMode::Editing => (
+                vec![
+                    "Press ".into(),
+                    "Esc".bold(),
+                    " to stop editing, ".into(),
+                    "Enter".bold(),
+                    " to record the message".into(),
+                ],
+                Style::default(),
+            ),
+        };
+        let text = Text::from(Line::from(msg)).patch_style(style);
+        let help_message = Paragraph::new(text);
+        frame.render_widget(help_message, help_area);
+
+        let input = Paragraph::new(self.input.as_str())
+            .style(match self.input_mode {
+                InputMode::Normal => Style::default(),
+                InputMode::Editing => Style::default().fg(Color::Yellow),
+            })
+            .block(Block::bordered().title("Input"));
+        frame.render_widget(input, input_area);
+        match self.input_mode {
+            // Hide the cursor. `Frame` does this by default, so we don't need to do anything here
+            InputMode::Normal => {}
+
+            // Make the cursor visible and ask ratatui to put it at the specified coordinates after
+            // rendering
+            #[allow(clippy::cast_possible_truncation)]
+            InputMode::Editing => frame.set_cursor_position(Position::new(
+                // Draw the cursor at the current position in the input field.
+                // This position is can be controlled via the left and right arrow key
+                input_area.x + self.character_index as u16 + 1,
+                // Move one line down, from the border to the input line
+                input_area.y + 1,
+            )),
+        }
+
+        let messages: Vec<ListItem> = self
+            .messages
+            .iter()
+            .enumerate()
+            .map(|(i, m)| {
+                let content = Line::from(Span::raw(format!("{i}: {m}")));
+                ListItem::new(content)
+            })
+            .collect();
+        let messages = List::new(messages).block(Block::bordered().title("Messages"));
+        frame.render_widget(messages, messages_area);
     }
 
     pub fn next_tab(&mut self) {
@@ -261,7 +330,6 @@ fn render_footer(area: Rect, buf: &mut Buffer) {
         .render(area, buf);
 }
 
-
 impl SelectedTab {
     /// Get the previous tab, if there is no previous tab return the current tab.
     fn previous(self) -> Self {
@@ -278,7 +346,6 @@ impl SelectedTab {
     }
 }
 
-
 impl Widget for SelectedTab {
     fn render(self, area: Rect, buf: &mut Buffer) {
         // in a real app these might be separate widgets
@@ -290,12 +357,6 @@ impl Widget for SelectedTab {
         }
     }
 }
-
-
-
-
-
-
 
 impl SelectedTab {
     /// Return tab's name as a styled `Line`
@@ -310,13 +371,7 @@ impl SelectedTab {
     }
 
     fn render_tab0(self, area: Rect, buf: &mut Buffer) {
-
         //impl the chat/user_input widget here!
-
-
-
-
-
 
         Paragraph::new("render_tab0:Hello, World!")
             .block(self.block())
@@ -350,9 +405,6 @@ impl SelectedTab {
             .padding(Padding::horizontal(1))
             .border_style(self.palette().c900)
     }
-
-
-
 
     //
     const fn palette(self) -> tailwind::Palette {
