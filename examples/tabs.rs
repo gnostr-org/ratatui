@@ -131,10 +131,12 @@ impl Widget for &App {
 impl App {
     fn render_tabs(&self, area: Rect, buf: &mut Buffer) {
         let titles = SelectedTab::iter().map(SelectedTab::title);
-        //let style = (Color::Reset, Color::White);
-        let style = (self.selected_tab.palette().c100, self.selected_tab.palette().c200);
-                              //text                             //background
-        let highlight_style = (self.selected_tab.palette().c400, Color::Reset);
+        //           //text      //background color of widget
+        //                       //Color::Reset bkgrnd of terminal
+        let style = (Color::Red, Color::Reset);
+                              //text       //background of selected tab
+        //                                 //Color::Reset bkgrnd of terminal
+        let highlight_style = (Color::Red, Color::Reset);
         let selected_tab_index = self.selected_tab as usize;
         Tabs::new(titles)
             .style(style)
@@ -172,8 +174,10 @@ impl SelectedTab {
     /// Return tab's name as a styled `Line`
     fn title(self) -> Line<'static> {
         format!("  {self}  ")
-            .fg(tailwind::VIOLET.c200)
-            .bg(tailwind::VIOLET.c200)
+            //text color of not selected tab
+            .fg(Color::White)
+            //color of bckgrnd of not selected tab
+            .bg(Color::Reset)
             .into()
     }
 
@@ -206,7 +210,7 @@ impl SelectedTab {
         Block::bordered()
             .border_set(symbols::border::PROPORTIONAL_TALL)
             .padding(Padding::horizontal(1))
-            .border_style(self.palette().c700)
+            .border_style(self.palette().c900)
     }
     const fn palette(self) -> tailwind::Palette {
         match self {
