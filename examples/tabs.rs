@@ -18,7 +18,7 @@ use ratatui::{
     buffer::Buffer,
     crossterm::event::{self, Event, KeyCode, KeyEventKind},
     layout::{Constraint, Layout, Rect},
-    style::{palette::tailwind, Style, Color, Stylize},
+    style::{palette::tailwind, Color, Style, Stylize},
     symbols,
     text::Line,
     widgets::{Block, Padding, Paragraph, Tabs, Widget},
@@ -135,7 +135,7 @@ impl App {
         //                       //Color::Reset bkgrnd of terminal
         let style = (Color::Magenta, Color::Reset);
         //let style = (self.selected_tab.palette().c500, Color::Reset);
-                              //text       //background of selected tab
+        //text       //background of selected tab
         //                                 //Color::Reset bkgrnd of terminal
         let highlight_style = (Color::White, Color::Reset);
         //let highlight_style = (self.selected_tab.palette().c500, Color::Reset);
@@ -203,9 +203,11 @@ impl SelectedTab {
     }
 
     fn render_tab3(self, area: Rect, buf: &mut Buffer) {
-        Paragraph::new("render_tab3:I know, these are some basic changes. But I think you got the main idea.")
-            .block(self.block())
-            .render(area, buf);
+        Paragraph::new(
+            "render_tab3:I know, these are some basic changes. But I think you got the main idea.",
+        )
+        .block(self.block())
+        .render(area, buf);
     }
 
     /// A block surrounding the tab's content
