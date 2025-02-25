@@ -14,6 +14,12 @@
 //! [examples readme]: https://github.com/ratatui/ratatui/blob/main/examples/README.md
 
 use color_eyre::Result;
+use ratatui::text::Text;
+use ratatui::text::Span;
+use ratatui::widgets::List;
+use ratatui::widgets::ListItem;
+use ratatui::widgets::block::Position;
+use ratatui::style::Modifier;
 use ratatui::{
     buffer::Buffer,
     crossterm::event::{self, Event, KeyCode, KeyEventKind},
