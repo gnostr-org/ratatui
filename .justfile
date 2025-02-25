@@ -112,11 +112,10 @@ browser-webrtc-example:
 @tabs-example *args='':
     bash -c 'while (( "$#" )); do cargo run --example tabs -- $1; shift; done' -- "$@"
 
-
-
-install-chat-example:
-    @just exec "cargo install --bin chat-example --path examples/chat"
-
+@libp2p-chat-example *args='':
+    bash -c 'while (( "$#" )); do cargo run --example libp2p_chat -- $1; shift; done' -- "$@"
+@libp2p-tabs-example *args='':
+    bash -c 'while (( "$#" )); do cargo run --example libp2p_tabs -- $1; shift; done' -- "$@"
 
 install-autonat_client:
     @just exec "cargo install --bin autonat_client --path examples/autonat"
