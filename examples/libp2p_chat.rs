@@ -37,6 +37,8 @@ use ratatui::{
     DefaultTerminal, Frame,
 };
 
+use ratatui::prelude::Widget;
+
 fn main() -> Result<()> {
     color_eyre::install()?;
     let terminal = ratatui::init();
