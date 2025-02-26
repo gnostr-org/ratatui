@@ -264,8 +264,12 @@ impl App {
 
     fn run(mut self, mut terminal: DefaultTerminal) -> Result<()> {
         while self.state == AppState::Running {
-            //terminal.draw(|frame| frame.render_widget(&self, frame.area())
-            terminal.draw(|frame| self.draw(frame))?;
+            terminal.draw(|frame|
+                frame.render_widget(&self, frame.area())
+            )?;
+            //terminal.draw(|frame|
+                //self.draw(frame)
+            //)?;
             self.handle_events()?;
         }
         Ok(())
