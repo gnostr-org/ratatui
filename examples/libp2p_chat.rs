@@ -130,7 +130,7 @@ impl App {
             if let Event::Key(key) = event::read()? {
                 match self.input_mode {
                     InputMode::Normal => match key.code {
-                        KeyCode::Char('e') => {
+                        KeyCode::Char('e') | KeyCode::Char('i') => {
                             self.input_mode = InputMode::Editing;
                         }
                         KeyCode::Char('q') | KeyCode::Esc => {
