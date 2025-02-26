@@ -14,45 +14,52 @@
 //! [examples readme]: https://github.com/ratatui/ratatui/blob/main/examples/README.md
 
 use color_eyre::Result;
-use ratatui::style::Modifier;
-use ratatui::text::Span;
-use ratatui::text::Text;
-use ratatui::Frame;
-//use ratatui::widgets::block::Position;
-use ratatui::prelude::Position;
-use ratatui::widgets::List;
-use ratatui::widgets::ListItem;
 use ratatui::{
     buffer::Buffer,
     crossterm::event::{self, Event, KeyCode, KeyEventKind},
-    layout::{Constraint, Layout, Rect},
-    style::{palette::tailwind, Color, Style, Stylize},
+    layout::{Constraint, Layout, Position, Rect},
+    style::{palette::tailwind, Color, Modifier, Style, Stylize},
     symbols,
-    text::Line,
-    widgets::{Block, Padding, Paragraph, Tabs, Widget},
-    DefaultTerminal,
+    text::{Line, Span, Text},
+    widgets::{Block, List, ListItem, Padding, Paragraph, Tabs, Widget},
+    DefaultTerminal, Frame,
 };
 use strum::{Display, EnumIter, FromRepr, IntoEnumIterator};
 
 fn main() -> Result<()> {
     color_eyre::install()?;
     let terminal = ratatui::init();
-    let app_result = App::default().run(terminal);
+    let app_result = App::new().run(terminal);
     ratatui::restore();
     app_result
 }
 
 #[derive(Default)]
-enum InputMode {
-    #[default]
-    Normal,
-    Editing,
+struct App {
+    /// Current value of the input box
+    input: String,
+    /// Position of cursor in the editor area.
+    character_index: usize,
+    /// Current input mode
+    input_mode: InputMode,
+    /// History of recorded messages
+    messages: Vec<String>,
+    state: AppState,
+    selected_tab: SelectedTab,
 }
+
 #[derive(Default, Clone, Copy, PartialEq, Eq)]
 enum AppState {
     #[default]
     Running,
     Quitting,
+}
+
+#[derive(Default, Clone, Copy, PartialEq, Eq)]
+enum InputMode {
+    #[default]
+    Normal,
+    Editing,
 }
 
 #[derive(Default, Clone, Copy, Display, FromRepr, EnumIter)]
@@ -68,20 +75,6 @@ enum SelectedTab {
     Tab4,
 }
 
-#[derive(Default)]
-struct App {
-    state: AppState,
-    selected_tab: SelectedTab,
-    /// Current value of the input box
-    input: String,
-    /// Position of cursor in the editor area.
-    character_index: usize,
-    /// Current input mode
-    input_mode: InputMode,
-    /// History of recorded messages
-    messages: Vec<String>,
-}
-
 impl App {
     const fn new() -> Self {
         Self {
@@ -92,125 +85,6 @@ impl App {
             state: AppState::Running,
             selected_tab: SelectedTab::Tab1,
         }
-    }
-
-    fn run(mut self, mut terminal: DefaultTerminal) -> Result<()> {
-        while self.state == AppState::Running {
-            loop {
-                //terminal.draw(|frame| self.draw(frame))?;
-                terminal.draw(|frame| frame.render_widget(&self, frame.area()))?;
-                self.handle_events()?;
-            } //loop end
-        } //while end
-        Ok(())
-    } //run end
-
-    fn handle_events(&mut self) -> std::io::Result<()> {
-        if let Event::Key(key) = event::read()? {
-            match self.input_mode {
-                InputMode::Normal => match key.code {
-                    KeyCode::Char('l') | KeyCode::Right => self.next_tab(),
-                    KeyCode::Char('h') | KeyCode::Left => self.previous_tab(),
-                    KeyCode::Char('q') | KeyCode::Esc => self.quit(),
-                    KeyCode::Char('e') => {
-                        self.input_mode = InputMode::Editing;
-                    }
-                    //KeyCode::Char('q') => {
-                    //    return Ok(());
-                    //}
-                    _ => {}
-                },
-                InputMode::Editing if key.kind == KeyEventKind::Press => match key.code {
-                    KeyCode::Enter => self.submit_message(),
-                    KeyCode::Char(to_insert) => self.enter_char(to_insert),
-                    KeyCode::Backspace => self.delete_char(),
-                    KeyCode::Left => self.move_cursor_left(),
-                    KeyCode::Right => self.move_cursor_right(),
-                    KeyCode::Esc => self.input_mode = InputMode::Normal,
-                    _ => {}
-                },
-                InputMode::Editing => {}
-            }
-        }
-        Ok(())
-    }
-
-    fn draw(&self, frame: &mut Frame) {
-        let vertical = Layout::vertical([
-            Constraint::Length(1),
-            Constraint::Length(3),
-            Constraint::Min(1),
-        ]);
-        let [help_area, input_area, messages_area] = vertical.areas(frame.area());
-
-        let (msg, style) = match self.input_mode {
-            InputMode::Normal => (
-                vec![
-                    "Press ".into(),
-                    "q".bold(),
-                    " to exit, ".into(),
-                    "e".bold(),
-                    " to start editing.".bold(),
-                ],
-                Style::default().add_modifier(Modifier::RAPID_BLINK),
-            ),
-            InputMode::Editing => (
-                vec![
-                    "Press ".into(),
-                    "Esc".bold(),
-                    " to stop editing, ".into(),
-                    "Enter".bold(),
-                    " to record the message".into(),
-                ],
-                Style::default(),
-            ),
-        };
-        let text = Text::from(Line::from(msg)).patch_style(style);
-        let help_message = Paragraph::new(text);
-        frame.render_widget(help_message, help_area);
-
-        let input = Paragraph::new(self.input.as_str())
-            .style(match self.input_mode {
-                InputMode::Normal => Style::default(),
-                InputMode::Editing => Style::default().fg(Color::Yellow),
-            })
-            .block(Block::bordered().title("Input"));
-        frame.render_widget(input, input_area);
-        match self.input_mode {
-            // Hide the cursor. `Frame` does this by default, so we don't need to do anything here
-            InputMode::Normal => {}
-
-            // Make the cursor visible and ask ratatui to put it at the specified coordinates after
-            // rendering
-            #[allow(clippy::cast_possible_truncation)]
-            InputMode::Editing => frame.set_cursor_position(Position::new(
-                // Draw the cursor at the current position in the input field.
-                // This position is can be controlled via the left and right arrow key
-                input_area.x + self.character_index as u16 + 1,
-                // Move one line down, from the border to the input line
-                input_area.y + 1,
-            )),
-        }
-
-        let messages: Vec<ListItem> = self
-            .messages
-            .iter()
-            .enumerate()
-            .map(|(i, m)| {
-                let content = Line::from(Span::raw(format!("{i}: {m}")));
-                ListItem::new(content)
-            })
-            .collect();
-        let messages = List::new(messages).block(Block::bordered().title("Messages"));
-        frame.render_widget(messages, messages_area);
-    }
-
-    pub fn next_tab(&mut self) {
-        self.selected_tab = self.selected_tab.next();
-    }
-
-    pub fn previous_tab(&mut self) {
-        self.selected_tab = self.selected_tab.previous();
     }
 
     fn move_cursor_left(&mut self) {
@@ -277,8 +151,183 @@ impl App {
         self.reset_cursor();
     }
 
+    fn draw(&self, frame: &mut Frame) {
+        //setup frame
+        let vertical = Layout::vertical([
+            Constraint::Fill(80), //messages_area
+            Constraint::Min(3),   //input_area
+            Constraint::Max(1),   //help_area
+        ]);
+        let [messages_area, input_area, help_area] = vertical.areas(frame.area());
+        let horizontal = Layout::vertical([
+            Constraint::Fill(3), //title_area
+            Constraint::Fill(3), //tabs_area
+        ]);
+        let [title_area, tabs_area] = horizontal.areas(frame.area());
+
+        //detect input_mode
+        let (msg, style) = match self.input_mode {
+            InputMode::Normal => (
+                vec![
+                    " ".into(),
+                    "Esc".bold(),
+                    " <QUIT> ".into(),
+                    "e".bold(),
+                    " <EDIT>".bold(),
+                ],
+                Style::default().add_modifier(Modifier::RAPID_BLINK),
+            ),
+            InputMode::Editing => (
+                vec![
+                    " ".into(),
+                    "Esc".bold(),
+                    " <NORMAL> ".into(),
+                    "<Enter>".bold(),
+                    " <POST>".into(),
+                ],
+                Style::default(),
+            ),
+        };
+
+        //title_area stub
+        //create a Text element
+        let text = Text::from(Line::from("           Title Area")).patch_style(style.clone());
+
+        //create Paragraph with Text element content
+        let help_message = Paragraph::new(text);
+
+        //render to frame
+        frame.render_widget(help_message, title_area);
+
+        //tabs_area stub
+        //create a Text element
+        let text = Text::from(Line::from("           Tabs Area")).patch_style(style.clone());
+
+        //create Paragraph with Text element content
+        let help_message = Paragraph::new(text);
+
+        //render to frame
+        frame.render_widget(help_message, tabs_area);
+
+        //create a Text element
+        let text = Text::from(Line::from(msg)).patch_style(style);
+
+        //create Paragraph with Text element content
+        let help_message = Paragraph::new(text);
+
+        //render to frame
+        frame.render_widget(help_message, help_area);
+
+        //
+        let input = Paragraph::new(self.input.as_str())
+            .style(match self.input_mode {
+                InputMode::Normal => Style::default(),
+                InputMode::Editing => Style::default().fg(Color::Yellow),
+            })
+            .block(Block::bordered().title("Input"));
+
+        //render to frame
+        frame.render_widget(input, input_area);
+
+        //
+        match self.input_mode {
+            // Hide the cursor. `Frame` does this by default, so we don't need to do anything here
+            InputMode::Normal => {}
+
+            // Make the cursor visible and ask ratatui to put it at the specified coordinates after
+            // rendering
+            #[allow(clippy::cast_possible_truncation)]
+            InputMode::Editing => frame.set_cursor_position(Position::new(
+                // Draw the cursor at the current position in the input field.
+                // This position is can be controlled via the left and right arrow key
+                input_area.x + self.character_index as u16 + 1,
+                // Move one line down, from the border to the input line
+                input_area.y + 1,
+            )),
+        }
+
+        //
+        let messages: Vec<ListItem> = self
+            .messages
+            .iter()
+            .enumerate()
+            .map(|(i, m)| {
+                let content = Line::from(Span::raw(format!("{i}: {m}")));
+                ListItem::new(content)
+            })
+            .collect();
+        let messages = List::new(messages).block(Block::bordered().title("Messages"));
+
+        //render to frame
+        frame.render_widget(messages, messages_area);
+    }
+
+    fn run(mut self, mut terminal: DefaultTerminal) -> Result<()> {
+        while self.state == AppState::Running {
+            //terminal.draw(|frame| frame.render_widget(&self, frame.area())
+            terminal.draw(|frame| self.draw(frame))?;
+            self.handle_events()?;
+        }
+        Ok(())
+    }
+
+    fn handle_events(&mut self) -> std::io::Result<()> {
+        if let Event::Key(key) = event::read()? {
+            match self.input_mode {
+                InputMode::Normal => match key.code {
+                    KeyCode::Char('e') => {
+                        self.input_mode = InputMode::Editing;
+                    }
+                    //KeyCode::Char('q') => {
+                    //    return Ok(());
+                    //}
+                    KeyCode::Char('l') | KeyCode::Right => self.next_tab(),
+                    KeyCode::Char('h') | KeyCode::Left => self.previous_tab(),
+                    KeyCode::Char('q') | KeyCode::Esc => self.quit(),
+
+                    _ => {}
+                },
+                InputMode::Editing if key.kind == KeyEventKind::Press => match key.code {
+                    KeyCode::Enter => self.submit_message(),
+                    KeyCode::Char(to_insert) => self.enter_char(to_insert),
+                    KeyCode::Backspace => self.delete_char(),
+                    KeyCode::Left => self.move_cursor_left(),
+                    KeyCode::Right => self.move_cursor_right(),
+                    KeyCode::Esc => self.input_mode = InputMode::Normal,
+                    _ => {}
+                },
+                InputMode::Editing => {}
+            }
+        }
+        Ok(())
+    }
+
+    pub fn next_tab(&mut self) {
+        self.selected_tab = self.selected_tab.next();
+    }
+
+    pub fn previous_tab(&mut self) {
+        self.selected_tab = self.selected_tab.previous();
+    }
+
     pub fn quit(&mut self) {
         self.state = AppState::Quitting;
+    }
+}
+
+impl SelectedTab {
+    /// Get the previous tab, if there is no previous tab return the current tab.
+    fn previous(self) -> Self {
+        let current_index: usize = self as usize;
+        let previous_index = current_index.saturating_sub(1);
+        Self::from_repr(previous_index).unwrap_or(self)
+    }
+
+    /// Get the next tab, if there is no next tab return the current tab.
+    fn next(self) -> Self {
+        let current_index = self as usize;
+        let next_index = current_index.saturating_add(1);
+        Self::from_repr(next_index).unwrap_or(self)
     }
 }
 
@@ -301,8 +350,8 @@ impl Widget for &App {
 impl App {
     fn render_tabs(&self, area: Rect, buf: &mut Buffer) {
         let titles = SelectedTab::iter().map(SelectedTab::title);
-        //           //text      //background color of widget
-        //                       //Color::Reset bkgrnd of terminal
+        //           //text        //background color of widget
+        //                         //Color::Reset bkgrnd of terminal
         let style = (Color::Magenta, Color::Reset);
         //let style = (self.selected_tab.palette().c500, Color::Reset);
         //text       //background of selected tab
@@ -330,22 +379,6 @@ fn render_footer(area: Rect, buf: &mut Buffer) {
         .render(area, buf);
 }
 
-impl SelectedTab {
-    /// Get the previous tab, if there is no previous tab return the current tab.
-    fn previous(self) -> Self {
-        let current_index: usize = self as usize;
-        let previous_index = current_index.saturating_sub(1);
-        Self::from_repr(previous_index).unwrap_or(self)
-    }
-
-    /// Get the next tab, if there is no next tab return the current tab.
-    fn next(self) -> Self {
-        let current_index = self as usize;
-        let next_index = current_index.saturating_add(1);
-        Self::from_repr(next_index).unwrap_or(self)
-    }
-}
-
 impl Widget for SelectedTab {
     fn render(self, area: Rect, buf: &mut Buffer) {
         // in a real app these might be separate widgets
@@ -371,11 +404,10 @@ impl SelectedTab {
     }
 
     fn render_tab0(self, area: Rect, buf: &mut Buffer) {
-        //impl the chat/user_input widget here!
 
-        Paragraph::new("render_tab0:Hello, World!")
-            .block(self.block())
-            .render(area, buf);
+        //Paragraph::new("render_tab0:Hello, World!")
+        //    .block(self.block())
+        //    .render(area, buf);
     }
 
     fn render_tab1(self, area: Rect, buf: &mut Buffer) {
@@ -405,8 +437,22 @@ impl SelectedTab {
             .padding(Padding::horizontal(1))
             .border_style(self.palette().c900)
     }
-
-    //
+    /// <https://docs.rs/ratatui/latest/ratatui/style/palette/tailwind/index.html>
+    /// <https://docs.rs/ratatui/latest/src/ratatui/style/palette/tailwind.rs.html#594-606>
+    /// Magnolia
+    /// pub const PURPLE: Palette = Palette {
+    ///     c50: Color::from_u32(0xfaf5ff),  //https://www.htmlcsscolor.com/hex/FAF5FF
+    ///     c100: Color::from_u32(0xf3e8ff),
+    ///     c200: Color::from_u32(0xe9d5ff),
+    ///     c300: Color::from_u32(0xd8b4fe),
+    ///     c400: Color::from_u32(0xc084fc),
+    ///     c500: Color::from_u32(0xa855f7),
+    ///     c600: Color::from_u32(0x9333ea),
+    ///     c700: Color::from_u32(0x7e22ce),
+    ///     c800: Color::from_u32(0x6b21a8),
+    ///     c900: Color::from_u32(0x581c87),
+    ///     c950: Color::from_u32(0x3b0764),
+    /// };
     const fn palette(self) -> tailwind::Palette {
         match self {
             Self::Tab1 => tailwind::PURPLE,
