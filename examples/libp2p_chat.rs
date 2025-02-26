@@ -135,8 +135,6 @@ impl App {
                         }
                         KeyCode::Char('q') | KeyCode::Esc => {
                             return Ok(());
-                            //self.quit();
-
                         }
                         _ => {}
                     },
@@ -164,7 +162,7 @@ impl App {
 
         let [messages_area, input_area, help_area] = vertical.areas(frame.area());
 
-        let (msg, style) = match self.input_mode {
+        let (msg, style, mode) = match self.input_mode {
             InputMode::Normal => (
                 vec![
                     " ".into(),
@@ -174,6 +172,7 @@ impl App {
                     " <EDIT>".bold(),
                 ],
                 Style::default().add_modifier(Modifier::RAPID_BLINK),
+                String::from("Normal")
             ),
             InputMode::Editing => (
                 vec![
@@ -184,8 +183,10 @@ impl App {
                     " <POST>".into(),
                 ],
                 Style::default(),
+                String::from("Editing")
             ),
         };
+        let mode = Text::from(Line::from(mode)).patch_style(style);
         let text = Text::from(Line::from(msg)).patch_style(style);
         let help_message = Paragraph::new(text);
         frame.render_widget(help_message, help_area);
@@ -195,7 +196,7 @@ impl App {
                 InputMode::Normal => Style::default(),
                 InputMode::Editing => Style::default().fg(Color::Yellow),
             })
-            .block(Block::bordered().title("Input"));
+            .block(Block::bordered().title(mode.to_string()));
         frame.render_widget(input, input_area);
         match self.input_mode {
             // Hide the cursor. `Frame` does this by default, so we don't need to do anything here
