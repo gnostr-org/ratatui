@@ -172,7 +172,7 @@ impl App {
                     " <EDIT>".bold(),
                 ],
                 Style::default().add_modifier(Modifier::RAPID_BLINK),
-                String::from("Normal")
+                String::from("Normal"),
             ),
             InputMode::Editing => (
                 vec![
@@ -183,7 +183,7 @@ impl App {
                     " <POST>".into(),
                 ],
                 Style::default(),
-                String::from("Editing")
+                String::from("Editing"),
             ),
         };
         let mode = Text::from(Line::from(mode)).patch_style(style);
