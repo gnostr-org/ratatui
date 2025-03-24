@@ -160,15 +160,39 @@ impl App {
             Constraint::Min(3),   //1//input_area
             Constraint::Max(2),   //0//help_area
         ]);
-            //3         2              1           0                         //?
+            //3         2              1           0                           //?
         let [tabs_area, messages_area, input_area, help_area] = vertical.areas(frame.area());
 
         let horizontal = Layout::horizontal([
-            Constraint::Fill(3), //title_area
-            Constraint::Fill(3), //tabs_area
+            Constraint::Fill(3), //0//tabs_area
+            Constraint::Fill(3), //1//tabs_area2
         ]);
-                                                      //?
+            //0         1                                    //?
         let [tabs_area, tabs_area2] = horizontal.areas(frame.area());
+
+        let titles = SelectedTab::iter().map(SelectedTab::title);
+        let style = (Color::White, Color::Reset);
+        let highlight_style = (Color::White, Color::Reset);
+        //let highlight_style = (self.selected_tab.palette().c500, Color::Reset);
+        let selected_tab_index = self.selected_tab as usize;
+        let tabs = Tabs::new(titles)
+            .style(style)
+            .highlight_style(highlight_style)
+            .select(selected_tab_index)
+            .padding("", "")
+            .divider(" ");
+        //insert tabs next to title
+        frame.render_widget(tabs, tabs_area2);
+        //title_area stub
+        //create a Text element
+        let text = Text::from(Line::from("Title Area")).patch_style(style.clone());
+        //create Paragraph with Text element content
+        let title_message = Paragraph::new(text);
+        //render to frame
+        frame.render_widget(title_message, tabs_area);
+
+
+
 
         //detect input_mode
         let (msg, style) = match self.input_mode {
@@ -194,32 +218,8 @@ impl App {
             ),
         };
 
-        //title_area stub
-        //create a Text element
-        let text = Text::from(Line::from("Title Area")).patch_style(style.clone());
-        //create Paragraph with Text element content
-        let title_message = Paragraph::new(text);
-        //render to frame
-        //frame.render_widget(title_message, tabs_area2);
-
-        frame.render_widget(title_message, tabs_area);
-
-        let titles = SelectedTab::iter().map(SelectedTab::title);
-        let style = (Color::Magenta, Color::Reset);
-        let highlight_style = (Color::White, Color::Reset);
-        //let highlight_style = (self.selected_tab.palette().c500, Color::Reset);
-        let selected_tab_index = self.selected_tab as usize;
-        let tabs = Tabs::new(titles)
-            .style(style)
-            .highlight_style(highlight_style)
-            .select(selected_tab_index)
-            .padding("", "")
-            .divider(" ");
-
-        frame.render_widget(tabs, tabs_area2);
-
-        //create a Text element
-        let text = Text::from(Line::from("text line"/*msg*/)).patch_style(style);
+        //create a Text element with msg
+        let text = Text::from(Line::from(msg)).patch_style(style);
 
         //create Paragraph with Text element content
         let help_message = Paragraph::new(text);
