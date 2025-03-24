@@ -152,17 +152,21 @@ impl App {
     }
 
     fn draw(&self, frame: &mut Frame) {
+
         //setup frame
         let vertical = Layout::vertical([
-            Constraint::Fill(80), //messages_area
+            Constraint::Fill(10), //messages_area
             Constraint::Min(3),   //input_area
-            Constraint::Max(1),   //help_area
+            Constraint::Max(2),   //help_area
         ]);
+                                                                   //?
         let [messages_area, input_area, help_area] = vertical.areas(frame.area());
-        let horizontal = Layout::vertical([
+
+        let horizontal = Layout::horizontal([
             Constraint::Fill(3), //title_area
             Constraint::Fill(3), //tabs_area
         ]);
+                                                      //?
         let [title_area, tabs_area] = horizontal.areas(frame.area());
 
         //detect input_mode
@@ -192,22 +196,46 @@ impl App {
         //title_area stub
         //create a Text element
         let text = Text::from(Line::from("           Title Area")).patch_style(style.clone());
-
         //create Paragraph with Text element content
         let help_message = Paragraph::new(text);
-
         //render to frame
         frame.render_widget(help_message, title_area);
 
-        //tabs_area stub
-        //create a Text element
-        let text = Text::from(Line::from("           Tabs Area")).patch_style(style.clone());
 
-        //create Paragraph with Text element content
-        let help_message = Paragraph::new(text);
 
-        //render to frame
-        frame.render_widget(help_message, tabs_area);
+
+
+        // //tabs_area stub
+        // //create a Text element
+        // let text = Text::from(Line::from("           Tabs Area")).patch_style(style.clone());
+        // //create Paragraph with Text element content
+        // let tabs_paragraph = Paragraph::new(text);
+        // //render to frame
+        // frame.render_widget(tabs_paragraph, tabs_area);
+
+        let titles = SelectedTab::iter().map(SelectedTab::title);
+        //           //text        //background color of widget
+        //                         //Color::Reset bkgrnd of terminal
+        let style = (Color::Magenta, Color::Reset);
+        //let style = (self.selected_tab.palette().c500, Color::Reset);
+        //text       //background of selected tab
+        //                                 //Color::Reset bkgrnd of terminal
+        let highlight_style = (Color::White, Color::Reset);
+        //let highlight_style = (self.selected_tab.palette().c500, Color::Reset);
+        let selected_tab_index = self.selected_tab as usize;
+        let tabs = Tabs::new(titles)
+            .style(style)
+            .highlight_style(highlight_style)
+            .select(selected_tab_index)
+            .padding("", "")
+            .divider(" ");
+            //.render(tabs_area, buf);
+
+        frame.render_widget(tabs, tabs_area);
+
+
+
+
 
         //create a Text element
         let text = Text::from(Line::from(msg)).patch_style(style);
@@ -256,7 +284,7 @@ impl App {
                 ListItem::new(content)
             })
             .collect();
-        let messages = List::new(messages).block(Block::bordered().title("Messages"));
+        let messages = List::new(messages).block(Block::bordered().title(" >>Messages<< "));
 
         //render to frame
         frame.render_widget(messages, messages_area);
@@ -275,16 +303,16 @@ impl App {
         if let Event::Key(key) = event::read()? {
             match self.input_mode {
                 InputMode::Normal => match key.code {
-                    KeyCode::Char('e') => {
+                    KeyCode::Char('e') | KeyCode::Char('i') => {
                         self.input_mode = InputMode::Editing;
                     }
+                    //force quit not result
+                    KeyCode::Char('q') | KeyCode::Esc => self.quit(),
                     //KeyCode::Char('q') => {
                     //    return Ok(());
                     //}
                     KeyCode::Char('l') | KeyCode::Right => self.next_tab(),
                     KeyCode::Char('h') | KeyCode::Left => self.previous_tab(),
-                    KeyCode::Char('q') | KeyCode::Esc => self.quit(),
-
                     _ => {}
                 },
                 InputMode::Editing if key.kind == KeyEventKind::Press => match key.code {
@@ -341,31 +369,9 @@ impl Widget for &App {
         let [tabs_area, title_area] = horizontal.areas(header_area);
 
         render_title(title_area, buf);
-        self.render_tabs(tabs_area, buf);
+        //self.render(tabs_area, buf);
         self.selected_tab.render(inner_area, buf);
         render_footer(footer_area, buf);
-    }
-}
-
-impl App {
-    fn render_tabs(&self, area: Rect, buf: &mut Buffer) {
-        let titles = SelectedTab::iter().map(SelectedTab::title);
-        //           //text        //background color of widget
-        //                         //Color::Reset bkgrnd of terminal
-        let style = (Color::Magenta, Color::Reset);
-        //let style = (self.selected_tab.palette().c500, Color::Reset);
-        //text       //background of selected tab
-        //                                 //Color::Reset bkgrnd of terminal
-        let highlight_style = (Color::White, Color::Reset);
-        //let highlight_style = (self.selected_tab.palette().c500, Color::Reset);
-        let selected_tab_index = self.selected_tab as usize;
-        Tabs::new(titles)
-            .style(style)
-            .highlight_style(highlight_style)
-            .select(selected_tab_index)
-            .padding("", "")
-            .divider(" ")
-            .render(area, buf);
     }
 }
 
