@@ -155,20 +155,20 @@ impl App {
 
         //setup frame
         let vertical = Layout::vertical([
-            Constraint::Fill(3), //tabs_area
-            Constraint::Fill(10), //messages_area
-            Constraint::Min(3),   //input_area
-            Constraint::Max(2),   //help_area
+            Constraint::Fill(3),  //3//tabs_area
+            Constraint::Fill(10), //2//messages_area
+            Constraint::Min(3),   //1//input_area
+            Constraint::Max(2),   //0//help_area
         ]);
-                                                                   //?
+            //3         2              1           0                         //?
         let [tabs_area, messages_area, input_area, help_area] = vertical.areas(frame.area());
 
-        let horizontal = Layout::vertical([
-            //Constraint::Fill(3), //title_area
+        let horizontal = Layout::horizontal([
+            Constraint::Fill(3), //title_area
             Constraint::Fill(3), //tabs_area
         ]);
                                                       //?
-        let [tabs_area] = horizontal.areas(frame.area());
+        let [tabs_area, tabs_area2] = horizontal.areas(frame.area());
 
         //detect input_mode
         let (msg, style) = match self.input_mode {
@@ -196,32 +196,16 @@ impl App {
 
         //title_area stub
         //create a Text element
-        let text = Text::from(Line::from("           Title Area")).patch_style(style.clone());
+        let text = Text::from(Line::from("Title Area")).patch_style(style.clone());
         //create Paragraph with Text element content
         let title_message = Paragraph::new(text);
         //render to frame
-        //frame.render_widget(title_message, title_area);
+        //frame.render_widget(title_message, tabs_area2);
 
-
-
-
-
-        //tabs_area stub
-        //create a Text element
-        let text = Text::from(Line::from("           Tabs Area")).patch_style(style.clone());
-        //create Paragraph with Text element content
-        let tabs_paragraph = Paragraph::new(text);
-        //render to frame
-        //frame.render_widget(tabs_paragraph);
-        frame.render_widget(tabs_paragraph, tabs_area);
+        frame.render_widget(title_message, tabs_area);
 
         let titles = SelectedTab::iter().map(SelectedTab::title);
-        //           //text        //background color of widget
-        //                         //Color::Reset bkgrnd of terminal
         let style = (Color::Magenta, Color::Reset);
-        //let style = (self.selected_tab.palette().c500, Color::Reset);
-        //text       //background of selected tab
-        //                                 //Color::Reset bkgrnd of terminal
         let highlight_style = (Color::White, Color::Reset);
         //let highlight_style = (self.selected_tab.palette().c500, Color::Reset);
         let selected_tab_index = self.selected_tab as usize;
@@ -231,19 +215,11 @@ impl App {
             .select(selected_tab_index)
             .padding("", "")
             .divider(" ");
-            //.render(tabs_area, buf);
 
-        frame.render_widget(tabs, tabs_area);
-
-
-        //frame.render_widget(title_message, title_area);
-
-
-
-
+        frame.render_widget(tabs, tabs_area2);
 
         //create a Text element
-        let text = Text::from(Line::from(msg)).patch_style(style);
+        let text = Text::from(Line::from("text line"/*msg*/)).patch_style(style);
 
         //create Paragraph with Text element content
         let help_message = Paragraph::new(text);
