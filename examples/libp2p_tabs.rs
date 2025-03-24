@@ -162,7 +162,7 @@ impl App {
                                                                    //?
         let [messages_area, input_area, help_area] = vertical.areas(frame.area());
 
-        let horizontal = Layout::horizontal([
+        let horizontal = Layout::vertical([
             Constraint::Fill(3), //title_area
             Constraint::Fill(3), //tabs_area
         ]);
