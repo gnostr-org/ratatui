@@ -185,14 +185,11 @@ impl App {
         frame.render_widget(tabs, tabs_area2);
         //title_area stub
         //create a Text element
-        let text = Text::from(Line::from("Title Area")).patch_style(style.clone());
+        let text = Text::from(Line::from(" Title Area")).patch_style(style.clone());
         //create Paragraph with Text element content
         let title_message = Paragraph::new(text);
         //render to frame
         frame.render_widget(title_message, tabs_area);
-
-
-
 
         //detect input_mode
         let (msg, style) = match self.input_mode {
